@@ -11,11 +11,18 @@ RSpec.describe 'Attach base64' do
     File.open(File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', second_filename))).read
   end
 
+  let(:empty_filename) { 'generic_avatar.jpeg' }
+  let(:empty_file) do
+    File.open(File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', empty_filename))).read
+  end
+
   let(:base64_data)        { { data: "data:image/jpeg;base64,#{Base64.encode64(file)}" } }
   let(:second_base64_data) { { data: "data:image/png;base64,#{Base64.encode64(second_file)}" } }
+  let(:empty_base64_data) { { data: "data:image/png;base64,#{Base64.encode64(empty_file)}" } }
 
   let(:data_with_filename)        { base64_data.merge(filename: filename) }
   let(:second_data_with_filename) { second_base64_data.merge(filename: second_filename) }
+  let(:empty_data_with_filename) { empty_base64_data.merge(filename: empty_filename) }
 
   let!(:rails_url) { Rails.application.routes.url_helpers }
   let(:user)       { User.create }
@@ -263,8 +270,8 @@ RSpec.describe 'Attach base64' do
   end
 
   context 'when user uses pictures' do
-    let(:pictures_attachments) { [base64_data, second_base64_data] }
-    let(:attachments_with_filename) { [data_with_filename, second_data_with_filename] }
+    let(:pictures_attachments) { [base64_data, second_base64_data, empty_base64_data] }
+    let(:attachments_with_filename) { [data_with_filename, second_data_with_filename, empty_data_with_filename] }
 
     context 'when user does not have any pictures attached yet' do
       it 'does not have any pictures attached' do
@@ -313,7 +320,7 @@ RSpec.describe 'Attach base64' do
               it 'attaches an array of pictures to the user' do
                 user.pictures.attach(pictures_attachments)
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
 
               it 'attached file matches attachment file' do
@@ -321,15 +328,16 @@ RSpec.describe 'Attach base64' do
 
                 expect(
                   File.open(ActiveStorage::Blob.service.send(:path_for,
-                                                             user.pictures.last.key)).read
+                                                             user.pictures.second.key)).read
                 ).to match(second_file)
               end
 
               it 'attaches multiple individual pictures to the user' do
                 user.pictures.attach(base64_data)
                 user.pictures.attach(second_base64_data)
+                user.pictures.attach(empty_base64_data)
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
             end
 
@@ -399,7 +407,7 @@ RSpec.describe 'Attach base64' do
               it 'attaches an array of pictures to the user' do
                 user.pictures.attach(pictures_attachments)
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
 
               it 'attached file matches attachment file' do
@@ -407,15 +415,16 @@ RSpec.describe 'Attach base64' do
 
                 expect(
                   File.open(ActiveStorage::Blob.service.send(:path_for,
-                                                             user.pictures.last.key)).read
+                                                             user.pictures.second.key)).read
                 ).to match(second_file)
               end
 
               it 'attaches multiple individual pictures to the user' do
                 user.pictures.attach(base64_data)
                 user.pictures.attach(second_base64_data)
+                user.pictures.attach(empty_base64_data)
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
             end
 
@@ -479,7 +488,7 @@ RSpec.describe 'Attach base64' do
                 user.pictures = pictures_attachments
                 user.save
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
 
               it 'attached file matches attachment file' do
@@ -488,15 +497,15 @@ RSpec.describe 'Attach base64' do
 
                 expect(
                   File.open(ActiveStorage::Blob.service.send(:path_for,
-                                                             user.pictures.last.key)).read
+                                                             user.pictures.second.key)).read
                 ).to match(second_file)
               end
 
               it 'attaches multiple individual pictures to the user' do
-                user.pictures = [base64_data, second_base64_data]
+                user.pictures = [base64_data, second_base64_data, empty_base64_data]
                 user.save
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
             end
 
@@ -564,7 +573,7 @@ RSpec.describe 'Attach base64' do
                 user.pictures = pictures_attachments
                 user.save
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
 
               it 'attached file matches attachment file' do
@@ -573,15 +582,15 @@ RSpec.describe 'Attach base64' do
 
                 expect(
                   File.open(ActiveStorage::Blob.service.send(:path_for,
-                                                             user.pictures.last.key)).read
+                                                             user.pictures.second.key)).read
                 ).to match(second_file)
               end
 
               it 'attaches multiple individual pictures to the user' do
-                user.pictures = [base64_data, second_base64_data]
+                user.pictures = [base64_data, second_base64_data, empty_base64_data]
                 user.save
 
-                expect(user.pictures.count).to eq(2)
+                expect(user.pictures.count).to eq(3)
               end
             end
 
@@ -750,7 +759,7 @@ RSpec.describe 'Attach base64' do
             it 'updates the existing record replacing attachments' do
               user.pictures = pictures_attachments
               user.save
-              expect(user.pictures.count).to eq(2)
+              expect(user.pictures.count).to eq(3)
             end
           end
         end
@@ -816,7 +825,7 @@ RSpec.describe 'Attach base64' do
             it 'updates the existing record replacing attachments' do
               user.pictures = pictures_attachments
               user.save
-              expect(user.pictures.count).to eq(2)
+              expect(user.pictures.count).to eq(3)
             end
           end
         end
